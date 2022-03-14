@@ -1,0 +1,48 @@
+version: "3.3"
+services:
+  wp:
+      image: "wordpress:latest"
+      ports:
+      - "80:80"
+      environment:
+      - WORDPRESS_DB_HOST=db:3306
+      - WORDPRESS_DB_NAME=wordpress
+      - WORDPRESS_DB_USER=wpuser
+      - WORDPRESS_DB_PASSWORD=wpuser
+      networks:
+      - wp-stack
+      depends_on:
+      - db
+      volumes:
+      - wp-data:/var/www/html
+      restart: always
+  panel:
+      image: "phpmyadmin:latest"
+      environment:
+        - PMA_HOST=db
+        - MARIADB_ROOT_PASSWORD=root
+      ports:
+        - "8060:80"
+      networks:
+        - wp-stack
+      depends_on:
+        - wp
+      restart: always
+  db:
+      image: "mariadb:latest"
+      environment:
+        - MYSQL_ROOT_PASSWORD=root
+        - MYSQL_DATABASE=wordpress
+        - MYSQL_USER=wpuser
+        - MYSQL_PASSWORD=wpuser
+      ports:
+        - "3306:3306"
+      networks:
+        - wp-stack
+      volumes:
+        - db-data:/var/lib/mysql/data
+      restart: always
+networks:
+    wp-stack:
+volumes:
+    db-data:
